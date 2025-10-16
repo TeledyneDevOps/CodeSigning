@@ -399,18 +399,14 @@ Use -DryRun to preview without signing.
 
     # Check for required files
     $requiredFiles = @(
-        @{Name = "CredentialManager.ps1"; Path = $credentialManagerPath},
-        @{Name = "AzureSignTool-x64.exe"; Path = (Join-Path $scriptDir "AzureSignTool-x64.exe")}
+        @{Name = "CredentialManager.ps1"; Path = $credentialManagerPath}
     )
-
+    
     foreach ($file in $requiredFiles) {
         if (-not (Test-Path $file.Path)) {
-            if ($file.Name -eq "CredentialManager.ps1") {
-                Write-Host "Required file 'CredentialManager.ps1' not found in script directory." -ForegroundColor Red
-                Write-Host "Download it from: https://github.com/TeledyneDevOps/CodeSigning" -ForegroundColor Yellow
-                exit 1
-            }
-            throw "Required file '$($file.Name)' not found in script directory. Please ensure all components are extracted together."
+            Write-Host "Required file 'CredentialManager.ps1' not found in script directory." -ForegroundColor Red
+            Write-Host "Download it from: https://github.com/TeledyneDevOps/CodeSigning" -ForegroundColor Yellow
+            exit 1
         }
     }
 
@@ -889,14 +885,6 @@ Use -DryRun to preview without signing.
         }
     }
 
-    $azureSignToolPath = Get-AzureSignTool
-
-    # Get Cosign if needed for container signing
-    if ($UseContainerSigning) {
-        $cosignPath = Get-Cosign
-        Write-Log "Container signing enabled, using Cosign from: $cosignPath" -Console
-    }
-
     # Modified certificate selection with management options
     if (-not $CertificateName) {
         $CertificateName = if ($env:AZURE_CERT_NAME) {
@@ -918,6 +906,15 @@ Use -DryRun to preview without signing.
         $env:AZURE_KEYVAULT_SECRET = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
             [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureSecret)
         )
+    }
+
+    # Get AzureSignTool path ONCE - only downloads if needed or if -UpdateTools is specified
+    $azureSignToolPath = Get-AzureSignTool
+
+    # Get Cosign if needed for container signing
+    if ($UseContainerSigning) {
+        $cosignPath = Get-Cosign
+        Write-Log "Container signing enabled, using Cosign from: $cosignPath" -Console
     }
 
     # Validate certificate and credentials before asking for file

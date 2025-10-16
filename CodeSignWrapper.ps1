@@ -508,7 +508,7 @@ Use -DryRun to preview without signing.
             A backup is created during updates to ensure recoverability.
         #>
         $toolPath = "$PSScriptRoot\AzureSignTool-x64.exe"
-        if ((Test-Path $toolPath) -and (-not $Force)) { return $toolPath }
+        if ((Test-Path $toolPath) -and (-not $UpdateTools)) { return $toolPath }
 
         try {
             Write-Log "Downloading Azure Sign Tool..." -Console
